@@ -51,7 +51,7 @@
       type: 'visa',
       patterns: [4],
       format: defaultFormat,
-      length: [13, 16],
+      length: [13, 16, 19],
       cvcLength: [3],
       luhn: true
     }, {
