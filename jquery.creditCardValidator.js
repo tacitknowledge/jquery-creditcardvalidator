@@ -56,7 +56,7 @@
       luhn: true
     }, {
       type: 'mastercard',
-      patterns: [51, 52, 53, 54, 55, 22, 23, 24, 25, 26, 27],
+      patterns: [51, 52, 53, 54, 55, 56, 22, 23, 24, 25, 26, 27],
       format: defaultFormat,
       length: [16],
       cvcLength: [3],
