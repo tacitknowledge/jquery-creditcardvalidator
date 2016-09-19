@@ -42,7 +42,7 @@ $.payment.cards = cards = [
   {
     type: 'maestro'
     patterns: [
-      5018, 502, 503, 506, 56, 58, 639, 6220, 67
+      5018, 502, 503, 506, 58, 639, 6220, 67
     ]
     format: defaultFormat
     length: [12..19]
@@ -70,14 +70,14 @@ $.payment.cards = cards = [
     type: 'visa'
     patterns: [4]
     format: defaultFormat
-    length: [13, 16]
+    length: [13, 16, 19]
     cvcLength: [3]
     luhn: true
   }
   {
     type: 'mastercard'
     patterns: [
-      51, 52, 53, 54, 55,
+      51, 52, 53, 54, 55, 56, 
       22, 23, 24, 25, 26, 27
     ]
     format: defaultFormat
@@ -127,9 +127,16 @@ $.payment.cards = cards = [
   }
 ]
 
-cardFromNumber = (num) ->
+getCardType = (number, options) ->
+  for card_type in (card for card in cards when card.type in options.accept)
+      if number.match card_type.pattern
+          return card_type
+
+  null
+
+cardFromNumber = (num, options) ->
   num = (num + '').replace(/\D/g, '')
-  for card in cards
+  for card in cards when card.type in options.accept
     for pattern in card.patterns
       p = pattern + ''
       return card if num.substr(0, p.length) == p
@@ -511,11 +518,19 @@ $.payment.cardExpiryVal = (value) ->
 
   month: month, year: year
 
-$.payment.validateCardNumber = (num) ->
+$.payment.validateCardNumber = (num, options) ->
+  options ?= {}
+
+  options.accept ?= (card.type for card in cards)
+
+  for card_type in options.accept
+    if card_type not in (card.type for card in cards)
+      throw 'Credit card type '#{ card.type }' is not supported'
+
   num = (num + '').replace(/\s+|-/g, '')
   return false unless /^\d+$/.test(num)
 
-  card = cardFromNumber(num)
+  card = cardFromNumber(num, options)
   return false unless card
 
   num.length in card.length and
