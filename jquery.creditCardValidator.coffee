@@ -4,6 +4,8 @@ $.payment.fn = {}
 $.fn.payment = (method, args...) ->
   $.payment.fn[method].apply(this, args)
 
+acceptedCardTypes = ['visa', 'mastercard', 'amex'];
+
 # Utils
 
 defaultFormat = /(\d{1,4})/g
@@ -127,16 +129,9 @@ $.payment.cards = cards = [
   }
 ]
 
-getCardType = (number, options) ->
-  for card_type in (card for card in cards when card.type in options.accept)
-      if number.match card_type.pattern
-          return card_type
-
-  null
-
-cardFromNumber = (num, options) ->
+cardFromNumber = (num) ->
   num = (num + '').replace(/\D/g, '')
-  for card in cards when card.type in options.accept
+  for card in cards when card.type in acceptedCardTypes
     for pattern in card.patterns
       p = pattern + ''
       return card if num.substr(0, p.length) == p
@@ -518,19 +513,20 @@ $.payment.cardExpiryVal = (value) ->
 
   month: month, year: year
 
-$.payment.validateCardNumber = (num, options) ->
-  options ?= {}
 
-  options.accept ?= (card.type for card in cards)
+$.payment.acceptedCardTypes = (types) ->
+  if types
+    acceptedCardTypes = types
 
-  for card_type in options.accept
-    if card_type not in (card.type for card in cards)
+$.payment.validateCardNumber = (num) ->
+  for card_type in acceptedCardTypes
+    if acceptedCardTypes.length && card_type not in (card.type for card in cards)
       throw 'Credit card type '#{ card.type }' is not supported'
 
   num = (num + '').replace(/\s+|-/g, '')
   return false unless /^\d+$/.test(num)
 
-  card = cardFromNumber(num, options)
+  card = cardFromNumber(num)
   return false unless card
 
   num.length in card.length and
